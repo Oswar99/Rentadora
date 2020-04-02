@@ -2,12 +2,12 @@ import mongoose = require("mongoose")
 import { connectMDB1 } from "./helpers"
 
 interface IUsuario extends mongoose.Document{
-    id: string;
     usuario: string;
     contraseña: string;
 }
+
 const UsuarioSchema = new mongoose.Schema({
-    id: {type : String, required : true},
+    _id: {type : String, required : true},
     usuario: {type : String, required : true},
     contraseña: {type : String, required : true}
 });
@@ -16,16 +16,16 @@ export const Usuario = mongoose.model<IUsuario>("Usuario", UsuarioSchema);
 
 export const addUsuario = async function(
     id: string,
-    usuario: string,
+    usu: string,
     contraseña: string
 ){
     await connectMDB1;
 
-    const ide: any = await getUsuario(id);
+    const ide: any = await getUsuario({usuario: usu});
     const us = new Usuario;
 
-    us.id = id;
-    us.usuario = usuario;
+    us._id = id;
+    us.usuario = usu;
     us.contraseña = contraseña;
 
     if (ide == null){
@@ -34,7 +34,7 @@ export const addUsuario = async function(
                 console.log(err);
             }else{
                 console.log(us);
-            }
+            };
         });
 
     }else{
@@ -42,9 +42,33 @@ export const addUsuario = async function(
     }
 };
 
-export function getUsuario(_id: string):Promise<any>{
+export const deleteUsuario = async function(filter: any){
+    await connectMDB1;
+
+    Usuario.deleteMany(filter, (err:any, result:any) =>{
+        if(err){
+            console.log(err.message);
+        }else{
+            console.log(result);
+        };
+    });
+};
+
+export const updateUsuario = async function(filter: any, update: any){
+    await connectMDB1;
+
+    Usuario.updateMany(filter, update, (err:any, result:any)=>{
+        if(err){
+            console.log(err.message);
+        }else{
+            console.log(result)
+        }
+    });
+};
+
+export function getUsuario(filter : any):Promise<any>{
     return new Promise<any>( resolve => {
-        Usuario.findOne({id: _id}, (err:any, data:any) => {
+        Usuario.findOne(filter, (err:any, data:any) => {
             if(err){
                 resolve({});
             }else{
